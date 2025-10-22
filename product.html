@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Товар — NOIR.LAB</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">NOIR.LAB</div>
+  <a href="index.html" class="nav-btn">Назад</a>
+</header>
+
+<main class="container">
+  <div class="card" id="product-card">
+    <h2 id="prod-title"></h2>
+    <div id="prod-desc" class="muted"></div>
+    <div id="prod-price" class="price"></div>
+
+    <div class="row">
+      <label>Размер</label>
+      <select id="prod-size"></select>
+      <a href="#" id="size-chart-toggle" class="small-link muted">Показать размерную сетку</a>
+    </div>
+
+    <div id="size-chart" class="card hidden small muted">
+      <strong>Размерная сетка (см)</strong>
+      <table class="size-table">
+        <tr><th>Размер</th><th>Грудь</th><th>Длина</th></tr>
+        <tr><td>S</td><td>90</td><td>68</td></tr>
+        <tr><td>M</td><td>96</td><td>70</td></tr>
+        <tr><td>L</td><td>102</td><td>72</td></tr>
+        <tr><td>XL</td><td>108</td><td>74</td></tr>
+      </table>
+    </div>
+
+    <div class="row">
+      <label>Количество</label>
+      <input type="number" id="prod-qty" value="1" min="1">
+    </div>
+
+    <div class="actions">
+      <button id="add-to-cart" class="btn">Добавить в корзину</button>
+    </div>
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
