@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Noir Atelier — Preorder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="dark">
+<!-- Шапка -->
+<header class="topstrip">
+  <div class="brand"><div class="logo">NA</div> Noir Atelier</div>
+  <nav class="controls">
+    <button id="theme-toggle" class="pill">Тема</button>
+    <select id="lang-select" class="pill">
+      <option value="ru">RU</option>
+      <option value="en">EN</option>
+    </select>
+    <button id="cart-button" class="pill cartbtn">Корзина <span class="badge" id="cart-count">0</span></button>
+  </nav>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="bg-top"></div>
+    <div class="bg-bottom"></div>
+    <div class="center">
+      <h1>Добро пожаловать</h1>
+      <p>Предзаказ дизайнерских вещей</p>
+    </div>
+  </div>
+
+  <div class="catalog" id="catalog"></div>
+</main>
+
+<footer>
+  <div class="brand-info">
+    <p>Noir Atelier — уникальные дизайнерские вещи для стильных людей.</p>
+  </div>
+</footer>
+
+<div class="modal-back" id="modal-back">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
