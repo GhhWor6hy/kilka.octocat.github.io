@@ -1,103 +1,121 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>NOIR.LAB — Магазин</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>NOIR.LAB — Тестовый магазин</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<header class="site-header">
-  <div class="brand">NOIR.LAB</div>
-  <nav class="nav-right">
-    <button id="theme-toggle" class="icon-btn">🌙</button>
-    <a href="register.html" class="nav-btn" id="nav-register">Зарегистрироваться</a>
-    <a href="login.html" class="nav-btn" id="nav-login">Войти</a>
-    <button id="cart-open" class="nav-btn icon-btn">🛒 <span id="cart-count" class="cart-count">0</span></button>
-    <a href="profile.html" class="nav-btn" id="nav-profile" style="display:none">Личный кабинет</a>
-  </nav>
-</header>
+  <header class="site-header">
+    <div class="brand">NOIR.LAB</div>
+    <nav class="nav-right">
+      <button id="theme-toggle" aria-label="theme" class="icon-btn">🌙</button>
+      <a href="profile.html" id="profile-link" class="nav-btn" style="display:none">Личный кабинет</a>
+    </nav>
+  </header>
 
-<main class="container">
-  <section class="hero card">
-    <h1>Коллекция NOIR.LAB</h1>
-    <p class="muted">Кликайте на карточку, чтобы открыть подробности товара. Кнопки "Купить" и "Добавить в корзину" работают прямо на карточке.</p>
-  </section>
+  <main class="container">
+    <section id="hero" class="hero card">
+      <h1>Коллекция предзаказов</h1>
+      <p class="muted">Тестовый магазин — кликай на товар, чтобы посмотреть размеры и оформить предзаказ.</p>
+      <div class="auth-actions" id="auth-buttons">
+        <button id="btn-register" class="btn">Зарегистрироваться</button>
+        <button id="btn-login" class="btn ghost">Войти</button>
+      </div>
+    </section>
 
-  <section class="catalog" id="catalog" aria-live="polite"></section>
-</main>
+    <section class="catalog" id="catalog">
+      <!-- карточки товаров -->
+    </section>
+  </main>
 
-<!-- Product modal -->
-<div id="product-modal" class="overlay hidden" aria-hidden="true">
-  <div class="product-modal-panel card animate-up">
-    <button id="product-close" class="modal-close">✕</button>
-    <div class="product-modal-grid">
-      <div class="product-modal-image" id="modal-image">[Фото]</div>
-      <div class="product-modal-info">
-        <h2 id="modal-title"></h2>
-        <p id="modal-desc" class="muted"></p>
-        <div class="price" id="modal-price"></div>
+  <!-- Product Modal -->
+  <div id="product-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-panel card">
+      <button class="modal-close icon-btn" id="modal-close">✕</button>
+      <div class="modal-content">
+        <div class="modal-left">
+          <div id="modal-image" class="product-thumb"></div>
+        </div>
+        <div class="modal-right">
+          <h2 id="modal-title"></h2>
+          <p id="modal-desc" class="muted"></p>
+          <div class="price" id="modal-price"></div>
+
+          <div class="row">
+            <label>Размер</label>
+            <select id="modal-size">
+              <!-- options -->
+            </select>
+            <a href="#" id="size-chart-toggle" class="muted small-link">Показать размерную сетку</a>
+          </div>
+
+          <div id="size-chart" class="card hidden small muted">
+            <strong>Размерная сетка (см)</strong>
+            <table class="size-table">
+              <tr><th>Размер</th><th>Грудь</th><th>Длина</th></tr>
+              <tr><td>S</td><td>90</td><td>68</td></tr>
+              <tr><td>M</td><td>96</td><td>70</td></tr>
+              <tr><td>L</td><td>102</td><td>72</td></tr>
+              <tr><td>XL</td><td>108</td><td>74</td></tr>
+            </table>
+          </div>
+
+          <div class="row">
+            <label>Количество</label>
+            <input id="modal-qty" type="number" min="1" value="1" />
+          </div>
+
+          <div class="actions">
+            <button id="buy-now" class="btn">Предзаказать</button>
+            <button id="add-to-cart" class="btn ghost">Добавить в корзину</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mini Checkout Modal -->
+  <div id="checkout-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-panel card">
+      <button class="modal-close icon-btn" id="checkout-close">✕</button>
+      <h3>Оформление предзаказа</h3>
+      <form id="checkout-form">
         <div class="row">
-          <label>Размер</label>
-          <select id="modal-size"></select>
-          <a href="#" id="modal-size-chart-toggle" class="muted small-link">Показать размерную сетку</a>
+          <label>Имя</label>
+          <input name="name" id="checkout-name" required />
         </div>
-        <div id="modal-size-chart" class="card hidden small muted">
-          <strong>Размерная сетка (см)</strong>
-          <table class="size-table"><tr><th>Размер</th><th>Грудь</th><th>Длина</th></tr><tr><td>S</td><td>90</td><td>68</td></tr><tr><td>M</td><td>96</td><td>70</td></tr><tr><td>L</td><td>102</td><td>72</td></tr><tr><td>XL</td><td>108</td><td>74</td></tr></table>
+        <div class="row">
+          <label>Эл. почта</label>
+          <input name="email" id="checkout-email" type="email" required />
         </div>
-        <div class="row"><label>Кол-во</label><input id="modal-qty" type="number" min="1" value="1" /></div>
+        <div class="row">
+          <label>Адрес</label>
+          <input name="address" id="checkout-address" required />
+        </div>
+        <div class="row">
+          <label>Тестовая карта</label>
+          <input name="card" id="checkout-card" placeholder="4111 1111 1111 1111" required />
+          <small class="muted">Тестовые данные — списаний нет</small>
+        </div>
+        <input type="hidden" id="checkout-product-id" />
+        <input type="hidden" id="checkout-product-title" />
+        <input type="hidden" id="checkout-product-size" />
+        <input type="hidden" id="checkout-product-qty" />
         <div class="actions">
-          <button id="modal-buy" class="btn">Купить</button>
-          <button id="modal-add" class="btn ghost">Добавить в корзину</button>
+          <button type="submit" class="btn">Оплатить (тест)</button>
+          <button type="button" class="btn ghost" id="checkout-cancel">Отмена</button>
         </div>
-      </div>
+        <div id="checkout-msg" class="muted"></div>
+      </form>
     </div>
   </div>
-</div>
 
-<!-- Cart overlay -->
-<div id="cart-overlay" class="overlay hidden" aria-hidden="true">
-  <div class="overlay-panel card animate-right">
-    <button id="cart-close" class="modal-close">✕</button>
-    <h3>Корзина</h3>
-    <div id="cart-items" class="cart-items"></div>
-    <div class="cart-summary">
-      <div>Подытог: <span id="cart-subtotal">0</span> <span id="currency-symbol">$</span></div>
-      <div>Доставка: <span id="cart-shipping">0</span> <span id="currency-symbol-2">$</span></div>
-      <div><strong>Итого: <span id="cart-total">0</span> <span id="currency-symbol-3">$</span></strong></div>
-      <div class="actions">
-        <button id="checkout-btn" class="btn">Оформить заказ</button>
-        <button id="clear-cart" class="btn ghost">Очистить</button>
-      </div>
-    </div>
-  </div>
-</div>
+  <footer class="site-footer muted">
+    NOIR.LAB • Тестовый прототип • Данные хранятся локально
+  </footer>
 
-<!-- Checkout modal -->
-<div id="checkout-modal" class="overlay hidden" aria-hidden="true">
-  <div class="overlay-panel card animate-up">
-    <button id="checkout-close" class="modal-close">✕</button>
-    <h3>Оформление предзаказа</h3>
-    <form id="checkout-form">
-      <div class="row"><label>Имя</label><input name="name" id="co-name" required /></div>
-      <div class="row"><label>E-mail</label><input name="email" id="co-email" type="email" required /></div>
-      <div class="row"><label>Страна / Регион</label><input list="countries" id="co-country" placeholder="Начните ввод..." required /><datalist id="countries"><option value="Poland"></option><option value="Germany"></option><option value="United Kingdom"></option><option value="United States"></option><option value="France"></option></datalist></div>
-      <div class="row"><label>Адрес</label><input name="address" id="co-address" required /></div>
-      <div class="row"><label>Валюта</label><div style="display:flex;gap:8px;align-items:center"><input id="currency-search" placeholder="Поиск валюты (USD, EUR...)" /><select id="co-currency"></select></div></div>
-      <div class="row"><label>Способ доставки</label><select id="co-shipping-method"></select></div>
-      <div class="row"><label>Тестовая карта</label><input name="card" id="co-card" placeholder="4111 1111 1111 1111" required /></div>
-      <div class="row muted" id="shipping-info">Стоимость доставки и итоговая сумма появятся ниже</div>
-      <div class="actions">
-        <button class="btn" type="submit">Оплатить (тест)</button>
-        <button id="co-cancel" type="button" class="btn ghost">Отмена</button>
-      </div>
-      <div id="checkout-msg" class="muted"></div>
-    </form>
-  </div>
-</div>
-
-<footer class="site-footer muted">NOIR.LAB — прототип • Данные локально в localStorage</footer>
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

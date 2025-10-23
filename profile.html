@@ -1,1 +1,33 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>Личный кабинет — NOIR</title><link rel="stylesheet" href="style.css" /></head><body><header class="site-header"><div class="brand">NOIR.LAB</div><nav class="nav-right"><a href="index.html" class="nav-btn">Главная</a></nav></header><main class="container"><section class="card" id="profile-section"><h2>Привет, <span id="user-name"></span></h2><div class="row"><button id="logout-btn" class="btn ghost">Выйти</button></div><h3>Мои заказы</h3><div id="orders-list" class="orders-list muted"></div></section></main><footer class="site-footer muted">NOIR.LAB</footer><script src="script.js"></script></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Личный кабинет — NOIR.LAB</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">NOIR.LAB</div>
+    <nav class="nav-right">
+      <button id="theme-toggle" class="icon-btn">🌙</button>
+      <a href="index.html" class="nav-btn">Главная</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card" id="profile-section">
+      <h2>Привет, <span id="user-name"></span></h2>
+      <div class="row">
+        <button id="logout-btn" class="btn ghost">Выйти</button>
+      </div>
+
+      <h3>Мои заказы</h3>
+      <div id="orders-list" class="orders-list"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer muted">NOIR.LAB</footer>
+  <script src="script.js"></script>
+</body>
+</html>

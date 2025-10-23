@@ -1,196 +1,297 @@
 (() => {
-  // Data
+  // --- Data
   const PRODUCTS = [
-    { id: 'p1', title: 'Футболка NOIR Basic', price: 29, desc: 'Классическая футболка из хлопка. Мягкая и удобная.', sizes: ['S','M','L','XL'] },
+    { id: 'p1', title: 'Футболка NOIR Basic', price: 29, desc: 'Стандартная футболка из хлопка. Мягкая и удобная.', sizes: ['S','M','L','XL'] },
     { id: 'p2', title: 'Худи NOIR Heavy', price: 69, desc: 'Тёплое худи с плотным ворсом, лимитированная партия.', sizes: ['M','L','XL'] },
     { id: 'p3', title: 'Штаны NOIR Track', price: 49, desc: 'Удобные штаны для повседневной носки.', sizes: ['S','M','L','XL'] },
     { id: 'p4', title: 'Кепка NOIR Cap', price: 19, desc: 'Кепка с вышитым логотипом.', sizes: ['One Size'] },
   ];
 
-  // Keys & helpers
-  const LS_CART = 'noir_cart_v7';
-  const LS_USER = 'noir_user_v7';
-  const LS_ORDERS = 'noir_orders_v7';
-  const RATES = { USD:1, EUR:0.92, PLN:4.2, GBP:0.79, RUB:95 };
-  const SHIPPING_METHODS = {
-    'Poland': [ { id:'inpost', name:'InPost', cost:3 }, { id:'dpd', name:'DPD', cost:5 }, { id:'dhl', name:'DHL Express', cost:8 } ],
-    'Germany': [ { id:'dpd', name:'DPD', cost:7 }, { id:'dhl', name:'DHL', cost:9 } ],
-    'default': [ { id:'intl', name:'International Post', cost:15 }, { id:'express', name:'Express Intl', cost:25 } ]
-  };
+  // --- localStorage keys
+  const LS_USERS = 'noir_users_v2';
+  const LS_USER = 'noir_user_v2';
+  const LS_ORDERS = 'noir_orders_v2';
+  const LS_THEME = 'noir_theme_v2';
+  const LS_CART = 'noir_cart_v2';
 
+  // --- helpers
   const qs = s => document.querySelector(s);
   const qsa = s => Array.from(document.querySelectorAll(s));
-  const getCart = () => JSON.parse(localStorage.getItem(LS_CART) || '[]');
-  const saveCart = c => localStorage.setItem(LS_CART, JSON.stringify(c));
-  const getOrders = () => JSON.parse(localStorage.getItem(LS_ORDERS) || '[]');
-  const saveOrders = o => localStorage.setItem(LS_ORDERS, JSON.stringify(o));
+  const getUsers = () => JSON.parse(localStorage.getItem(LS_USERS) || '[]');
+  const saveUsers = u => localStorage.setItem(LS_USERS, JSON.stringify(u));
   const getCurrentUser = () => JSON.parse(localStorage.getItem(LS_USER) || 'null');
   const setCurrentUser = u => localStorage.setItem(LS_USER, JSON.stringify(u));
   const logoutUser = () => localStorage.removeItem(LS_USER);
+  const getOrders = () => JSON.parse(localStorage.getItem(LS_ORDERS) || '[]');
+  const saveOrders = o => localStorage.setItem(LS_ORDERS, JSON.stringify(o));
+  const getCart = () => JSON.parse(localStorage.getItem(LS_CART) || '[]');
+  const saveCart = c => localStorage.setItem(LS_CART, JSON.stringify(c));
 
-  // Theme small
-  qsa('#theme-toggle').forEach(b=>b.addEventListener('click', ()=>{ document.documentElement.classList.toggle('light'); b.textContent = document.documentElement.classList.contains('light') ? '☀️' : '🌙'; }));
+  // --- theme
+  function applyTheme(theme){
+    if(theme === 'light') document.documentElement.classList.add('light');
+    else document.documentElement.classList.remove('light');
+    localStorage.setItem(LS_THEME, theme);
+    qsa('#theme-toggle').forEach(b => b.textContent = theme === 'light' ? '☀️' : '🌙');
+  }
+  applyTheme(localStorage.getItem(LS_THEME) || 'dark');
+  qsa('#theme-toggle').forEach(btn => btn.addEventListener('click', () => {
+    const cur = localStorage.getItem(LS_THEME) || 'dark';
+    applyTheme(cur === 'light' ? 'dark' : 'light');
+  }));
 
-  // Render catalog stable grid
-  function renderCatalog(){
-    const el = qs('#catalog'); if(!el) return;
-    el.innerHTML = '';
-    PRODUCTS.forEach(p=>{
-      const card = document.createElement('article');
-      card.className = 'product card';
-      // reserve image area to avoid shift; buttons inside card will stop propagation
-      card.innerHTML = `
-        <div class="product-thumb" aria-hidden="true">${p.title}</div>
-        <div class="product-info">
-          <h4>${p.title}</h4>
-          <div class="muted small">${p.desc}</div>
-          <div class="card-foot">
-            <div class="price">${p.price} $</div>
-            <div class="actions">
-              <button class="btn small buy-now" data-id="${p.id}">Купить</button>
-              <button class="btn small add-cart" data-id="${p.id}">Добавить</button>
-            </div>
+  // --- Render catalog
+  const catalogEl = qs('#catalog');
+  function renderCatalog() {
+    if(!catalogEl) return;
+    catalogEl.innerHTML = '';
+    PRODUCTS.forEach(p => {
+      const el = document.createElement('div');
+      el.className = 'product card';
+      el.innerHTML = `
+        <div class="product-thumb">${p.title}</div>
+        <h4>${p.title}</h4>
+        <div class="muted small">${p.desc}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center; margin-top:8px">
+          <div class="price">${p.price} $</div>
+          <div class="actions">
+            <button class="btn small view-btn" data-id="${p.id}">Подробнее</button>
           </div>
         </div>
       `;
-      // clicking on card opens modal (but not when clicking buttons)
-      card.addEventListener('click', (e)=>{
-        if(e.target.closest('button')) return; // ignore if clicked a button inside
-        openProductModal(p.id);
-      });
-      // buttons handlers (stopPropagation so click doesn't open modal)
-      card.querySelectorAll('button').forEach(btn=>{
-        btn.addEventListener('click', (ev)=>{
-          ev.stopPropagation();
-          const id = btn.dataset.id;
-          if(btn.classList.contains('add-cart')) addToCartById(id);
-          if(btn.classList.contains('buy-now')) { addToCartById(id); qs('#checkout-btn').click(); }
-        });
-      });
-      el.appendChild(card);
+      catalogEl.appendChild(el);
     });
   }
 
-  // Product modal controls
-  const productModal = qs('#product-modal');
-  const productClose = qs('#product-close');
+  // --- Modal handling
+  const modal = qs('#product-modal');
+  const modalClose = qs('#modal-close');
   const modalTitle = qs('#modal-title');
   const modalDesc = qs('#modal-desc');
   const modalPrice = qs('#modal-price');
   const modalImage = qs('#modal-image');
   const modalSize = qs('#modal-size');
   const modalQty = qs('#modal-qty');
-  const modalSizeChart = qs('#modal-size-chart');
-  const modalSizeChartToggle = qs('#modal-size-chart-toggle');
-  const modalAdd = qs('#modal-add');
-  const modalBuy = qs('#modal-buy');
-  let currentModalProduct = null;
+  const sizeChart = qs('#size-chart');
+  const sizeChartToggle = qs('#size-chart-toggle');
 
-  function openProductModal(id){
-    const p = PRODUCTS.find(x=>x.id===id);
+  let currentProduct = null;
+
+  function openProductModal(productId){
+    const p = PRODUCTS.find(x => x.id === productId);
     if(!p) return;
-    currentModalProduct = p;
+    currentProduct = p;
     modalTitle.textContent = p.title;
     modalDesc.textContent = p.desc;
     modalPrice.textContent = p.price + ' $';
     modalImage.textContent = p.title;
     modalSize.innerHTML = '';
-    p.sizes.forEach(s => { const o = document.createElement('option'); o.value=s; o.textContent=s; modalSize.appendChild(o); });
-    modalQty.value = 1;
-    modalSizeChart.classList.add('hidden');
-    productModal.classList.remove('hidden');
-    productModal.setAttribute('aria-hidden','false');
-    // focus for keyboard
-    modalAdd.focus();
-  }
-  function closeProductModal(){ productModal.classList.add('hidden'); productModal.setAttribute('aria-hidden','true'); currentModalProduct = null; }
-  productClose && productClose.addEventListener('click', closeProductModal);
-  modalSizeChartToggle && modalSizeChartToggle.addEventListener('click', (e)=>{ e.preventDefault(); modalSizeChart.classList.toggle('hidden'); });
-
-  // Cart overlay controls (slide in)
-  const cartOverlay = qs('#cart-overlay');
-  const cartClose = qs('#cart-close');
-  const cartItemsEl = qs('#cart-items');
-  const cartSubtotal = qs('#cart-subtotal');
-  const cartShipping = qs('#cart-shipping');
-  const cartTotal = qs('#cart-total');
-  const cartCountEls = qsa('.cart-count');
-  const currencyEls = qsa('#currency-symbol, #currency-symbol-2, #currency-symbol-3');
-
-  function updateCartUI(shippingUSD=0, cur='USD'){
-    const cart = getCart();
-    if(cartItemsEl) cartItemsEl.innerHTML='';
-    cart.forEach((it, idx)=>{
-      const div = document.createElement('div'); div.className='cart-item';
-      div.innerHTML = `<div><strong>${it.title}</strong><div class="muted">Размер: ${it.size} • ${it.qty}шт</div></div><div><div>${(it.price*it.qty).toFixed(2)} $</div><button class="btn small remove-item" data-idx="${idx}">✕</button></div>`;
-      cartItemsEl && cartItemsEl.appendChild(div);
+    p.sizes.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      modalSize.appendChild(opt);
     });
-    const subtotal = cart.reduce((s,i)=>s + i.price*i.qty, 0);
-    cartSubtotal && (cartSubtotal.textContent = subtotal.toFixed(2));
-    cartShipping && (cartShipping.textContent = shippingUSD.toFixed(2));
-    cartTotal && (cartTotal.textContent = (subtotal + shippingUSD).toFixed(2));
-    cartCountEls.forEach(e=>e.textContent = cart.length);
-    currencyEls.forEach(e => e.textContent = '$');
-    saveCart(cart);
+    modalQty.value = 1;
+    sizeChart.classList.add('hidden');
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden','false');
   }
 
-  qsa('#cart-open').forEach(b=>b.addEventListener('click', ()=>{ updateCartUI(); cartOverlay.classList.remove('hidden'); }));
-  cartClose && cartClose.addEventListener('click', ()=> cartOverlay.classList.add('hidden'));
+  function closeProductModal(){
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden','true');
+    currentProduct = null;
+  }
 
-  // add to cart helpers
-  function addToCartById(id, size='M', qty=1){
-    const p = PRODUCTS.find(x=>x.id===id); if(!p) return;
+  modalClose && modalClose.addEventListener('click', closeProductModal);
+  sizeChartToggle && sizeChartToggle.addEventListener('click', (e)=>{
+    e.preventDefault();
+    sizeChart.classList.toggle('hidden');
+  });
+
+  // Buy/Add actions
+  qs('body').addEventListener('click', (e)=>{
+    const view = e.target.closest('.view-btn');
+    if(view){
+      const id = view.dataset.id;
+      openProductModal(id);
+    }
+  });
+
+  // Add to cart
+  const addToCartBtn = qs('#add-to-cart');
+  if(addToCartBtn) addToCartBtn.addEventListener('click', ()=>{
+    if(!currentProduct) return;
+    const size = modalSize.value;
+    const qty = parseInt(modalQty.value,10) || 1;
     const cart = getCart();
-    cart.push({ id:p.id, title:p.title, price:p.price, size, qty });
-    saveCart(cart); updateCartUI();
-  }
-  modalAdd && modalAdd.addEventListener('click', ()=>{ if(!currentModalProduct) return; addToCartById(currentModalProduct.id, modalSize.value, parseInt(modalQty.value,10)||1); closeProductModal(); });
-  modalBuy && modalBuy.addEventListener('click', ()=>{ if(!currentModalProduct) return; addToCartById(currentModalProduct.id, modalSize.value, parseInt(modalQty.value,10)||1); closeProductModal(); qs('#checkout-btn').click(); });
-
-  // remove item from cart
-  document.body.addEventListener('click', (e)=>{
-    const rem = e.target.closest('.remove-item');
-    if(rem){ const idx = Number(rem.dataset.idx); const c = getCart(); c.splice(idx,1); saveCart(c); updateCartUI(); }
+    cart.push({ id: currentProduct.id, title: currentProduct.title, size, qty, price: currentProduct.price });
+    saveCart(cart);
+    alert('Добавлено в корзину');
   });
 
-  // Checkout (simple: open checkout modal from cart)
-  qs('#checkout-btn') && qs('#checkout-btn').addEventListener('click', ()=>{ if(getCart().length===0){ alert('Корзина пуста'); return; } qs('#checkout-modal').classList.remove('hidden'); });
+  // Buy now -> open checkout modal
+  const buyNowBtn = qs('#buy-now');
+  const checkoutModal = qs('#checkout-modal');
+  const checkoutClose = qs('#checkout-close');
+  if(buyNowBtn) buyNowBtn.addEventListener('click', ()=>{
+    if(!currentProduct) return;
+    qs('#checkout-product-id').value = currentProduct.id;
+    qs('#checkout-product-title').value = currentProduct.title;
+    qs('#checkout-product-size').value = modalSize.value;
+    qs('#checkout-product-qty').value = modalQty.value;
+    // prefill user if logged
+    const user = getCurrentUser();
+    if(user){
+      qs('#checkout-name').value = user.name || '';
+      qs('#checkout-email').value = user.email || '';
+    } else {
+      qs('#checkout-name').value = '';
+      qs('#checkout-email').value = '';
+    }
+    checkoutModal.classList.remove('hidden');
+    checkoutModal.setAttribute('aria-hidden','false');
+  });
+  checkoutClose && checkoutClose.addEventListener('click', ()=>{
+    checkoutModal.classList.add('hidden');
+    checkoutModal.setAttribute('aria-hidden','true');
+  });
 
-  // Checkout form handling (basic, similar to v6)
-  qs('#checkout-form') && qs('#checkout-form').addEventListener('submit', (ev)=>{
+  // Checkout submit
+  const checkoutForm = qs('#checkout-form');
+  checkoutForm && checkoutForm.addEventListener('submit', (ev)=>{
     ev.preventDefault();
-    const name = qs('#co-name').value.trim();
-    const email = qs('#co-email').value.trim();
-    const address = qs('#co-address').value.trim();
-    const card = qs('#co-card').value.trim();
+    const pid = qs('#checkout-product-id').value;
+    const title = qs('#checkout-product-title').value;
+    const size = qs('#checkout-product-size').value;
+    const qty = parseInt(qs('#checkout-product-qty').value,10) || 1;
+    const name = qs('#checkout-name').value.trim();
+    const email = qs('#checkout-email').value.trim();
+    const address = qs('#checkout-address').value.trim();
+    const card = qs('#checkout-card').value.trim();
     if(card.length < 12){ qs('#checkout-msg').textContent = 'Неверные данные карты'; return; }
-    const cart = getCart(); if(cart.length===0){ qs('#checkout-msg').textContent = 'Корзина пуста'; return; }
-    const orderId = 'NOIR-' + Date.now().toString(36).toUpperCase().slice(-8);
-    const orders = getOrders(); const subtotalUSD = cart.reduce((s,i)=>s + i.price*i.qty,0);
-    orders.unshift({ id: orderId, name, email, address, items: cart, subtotalUSD, status: 'В обработке', createdAt: new Date().toLocaleString() });
+    // create order
+    const id = 'NOIR-' + Date.now().toString(36).toUpperCase().slice(-8);
+    const orders = getOrders();
+    orders.unshift({
+      id, productId: pid, title, size, qty, name, email, address, status: 'В обработке',
+      price: PRODUCTS.find(p => p.id === pid).price, createdAt: new Date().toLocaleString()
+    });
     saveOrders(orders);
-    localStorage.removeItem(LS_CART); updateCartUI();
-    qs('#checkout-msg').innerHTML = 'Оплата успешна ✅<br>Номер заказа: <b>' + orderId + '</b>';
-    setTimeout(()=>{ qs('#checkout-modal').classList.add('hidden'); qs('#cart-overlay').classList.add('hidden'); }, 900);
+    // set current user if not
+    if(!getCurrentUser()) setCurrentUser({ name, email });
+    qs('#checkout-msg').innerHTML = 'Оплата успешна ✅<br>Номер заказа: <b>' + id + '</b>';
+    // close modals after short delay
+    setTimeout(()=>{
+      checkoutModal.classList.add('hidden');
+      checkoutModal.setAttribute('aria-hidden','true');
+      closeProductModal();
+    }, 900);
   });
 
-  // Product page support (direct link)
-  function initProductPage(){
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id'); if(!id) return;
-    openProductModal(id);
+  // Cancel checkout
+  qs('#checkout-cancel') && qs('#checkout-cancel').addEventListener('click', ()=>{
+    qs('#checkout-msg').textContent = '';
+    checkoutModal.classList.add('hidden');
+    checkoutModal.setAttribute('aria-hidden','true');
+  });
+
+  // --- Auth flows (register/login/profile) ---
+  // register page
+  const registerForm = qs('#register-form');
+  if(registerForm){
+    registerForm.addEventListener('submit', (ev)=>{
+      ev.preventDefault();
+      const fd = new FormData(registerForm);
+      const name = fd.get('name').trim();
+      const email = fd.get('email').trim();
+      const password = fd.get('password').trim();
+      const users = getUsers();
+      if(users.some(u => u.email === email)){
+        qs('#register-msg').textContent = 'E-mail уже зарегистрирован';
+        return;
+      }
+      users.push({ name, email, password });
+      saveUsers(users);
+      qs('#register-msg').textContent = 'Регистрация успешна ✅ Перейдите на вход';
+      setTimeout(()=> window.location.href = 'login.html', 900);
+    });
   }
 
-  // init index
-  if(qs('#catalog')){ renderCatalog(); }
+  // login page
+  const loginForm = qs('#login-form');
+  if(loginForm){
+    loginForm.addEventListener('submit', (ev)=>{
+      ev.preventDefault();
+      const fd = new FormData(loginForm);
+      const email = fd.get('email').trim();
+      const password = fd.get('password').trim();
+      const user = getUsers().find(u => u.email === email && u.password === password);
+      if(!user){ qs('#login-msg').textContent = 'Неверный e-mail или пароль'; return; }
+      setCurrentUser({ name: user.name, email: user.email });
+      window.location.href = 'profile.html';
+    });
+  }
 
-  // open product modal on load if on product.html with id
-  if(window.location.pathname.includes('product.html')) initProductPage();
+  // profile page
+  const profileSection = qs('#profile-section');
+  if(profileSection){
+    const user = getCurrentUser();
+    if(!user){ window.location.href = 'login.html'; return; }
+    qs('#user-name').textContent = user.name;
+    // render orders
+    const orders = getOrders().filter(o => o.email === user.email);
+    const list = qs('#orders-list');
+    list.innerHTML = '';
+    if(orders.length === 0){
+      list.innerHTML = '<div class="muted">У вас пока нет заказов.</div>';
+    } else {
+      orders.forEach(o => {
+        const el = document.createElement('div');
+        el.className = 'order-card';
+        el.innerHTML = `
+          <div class="meta">
+            <strong>${o.title}</strong>
+            <div class="muted">Заказ: ${o.id} • ${o.createdAt}</div>
+            <div class="muted">Размер: ${o.size} • Кол-во: ${o.qty}</div>
+          </div>
+          <div class="status">
+            <div class="muted">${o.status}</div>
+            <div class="price">${o.price} $</div>
+          </div>
+        `;
+        list.appendChild(el);
+      });
+    }
 
-  // close modal on ESC
-  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ productModal.classList.add('hidden'); cartOverlay.classList.add('hidden'); qs('#checkout-modal') && qs('#checkout-modal').classList.add('hidden'); } });
+    // logout
+    qs('#logout-btn').addEventListener('click', ()=>{
+      logoutUser();
+      window.location.href = 'index.html';
+    });
+  }
 
-  // initial cart state
-  updateCartUI();
+  // --- Main init ---
+  function init(){
+    renderCatalog();
+
+    // show/hide auth on main
+    const user = getCurrentUser();
+    const authButtons = qs('#auth-buttons');
+    const profileLink = qs('#profile-link');
+    if(authButtons){
+      if(user){ authButtons.style.display = 'none'; profileLink.style.display = 'inline-block'; }
+      else { authButtons.style.display = 'flex'; profileLink.style.display = 'none'; }
+      qs('#btn-register') && qs('#btn-register').addEventListener('click', ()=> window.location.href = 'register.html');
+      qs('#btn-login') && qs('#btn-login').addEventListener('click', ()=> window.location.href = 'login.html');
+    }
+
+    // Close modal on ESC
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape'){ closeProductModal(); checkoutModal.classList.add('hidden'); }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
 
 })();

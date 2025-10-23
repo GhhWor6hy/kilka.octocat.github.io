@@ -1,1 +1,42 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>Вход — NOIR</title><link rel="stylesheet" href="style.css" /></head><body><header class="site-header"><div class="brand">NOIR.LAB</div></header><main class="container"><section class="card auth-card"><h2>Вход</h2><form id="login-form"><div class="row"><label>E-mail</label><input name="email" type="email" required /></div><div class="row"><label>Пароль</label><input name="password" type="password" required /></div><div class="actions"><button class="btn" type="submit">Войти</button></div></form><div id="login-msg" class="muted"></div></section></main><footer class="site-footer muted">NOIR.LAB</footer><script src="script.js"></script></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Вход — NOIR.LAB</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">NOIR.LAB</div>
+    <nav class="nav-right">
+      <button id="theme-toggle" class="icon-btn">🌙</button>
+      <a href="index.html" class="nav-btn">Главная</a>
+      <a href="register.html" class="nav-btn">Регистрация</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card auth-card">
+      <h2>Войти</h2>
+      <form id="login-form">
+        <div class="row">
+          <label>E-mail</label>
+          <input name="email" type="email" required />
+        </div>
+        <div class="row">
+          <label>Пароль</label>
+          <input name="password" type="password" required />
+        </div>
+        <div class="actions">
+          <button class="btn" type="submit">Войти</button>
+        </div>
+      </form>
+      <div id="login-msg" class="muted"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer muted">NOIR.LAB</footer>
+  <script src="script.js"></script>
+</body>
+</html>
